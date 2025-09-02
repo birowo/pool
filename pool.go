@@ -34,10 +34,10 @@ func (p *pool[T]) Get() (r T) {
 	return
 }
 func (p *pool[T]) Put(r T) {
-	i := p.Add(1) - 1
+	i := p.Add(1)
 	if i > p.int32 {
 		p.Store(p.int32)
 		return
 	}
-	p.ts[i] = r
+	p.ts[i-1] = r
 }
