@@ -12,8 +12,7 @@ type pool[T any] struct {
 }
 
 func New[T any](n int, f func() T) *pool[T] {
-	n = 1 << n
-	if n < 1 {
+	if n == 0 {
 		return nil
 	}
 	return &pool[T]{
