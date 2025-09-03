@@ -25,16 +25,16 @@ func New[T any](n int, f func() T) *pool[T] {
 }
 func (p *pool[T]) Get() (r T) {
 	p.Lock()
-	p.i--
-	if p.i < 0 {
-		p.i = 0
+	if p.i > 0 {
+		p.i--
+		r = p.ts[p.i]
 		p.Unlock()
-		r = p.f()
 		return
 	}
-	r = p.ts[p.i]
 	p.Unlock()
+	r = p.f()
 	return
+
 }
 func (p *pool[T]) Put(r T) {
 	p.Lock()
