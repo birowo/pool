@@ -34,7 +34,6 @@ func (p *pool[T]) Get() (r T) {
 	p.Unlock()
 	r = p.f()
 	return
-
 }
 func (p *pool[T]) Put(r T) {
 	p.Lock()
