@@ -30,11 +30,10 @@ func (p *pool[T]) Get() (r T) {
 	r = p.ts[p.Add(-1)]
 	return
 }
-func (p *pool[T]) Put(r T) (ret bool) {
-	ret = p.CompareAndSwap(p.n, p.n)
-	if ret {
-		return
+func (p *pool[T]) Put(r T) bool {
+	if p.CompareAndSwap(p.n, p.n) {
+		return false
 	}
 	p.ts[p.Add(1)-1] = r
-	return
+	return true
 }
