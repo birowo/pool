@@ -1,45 +1,40 @@
 package pool
 
 import (
-	"sync"
+	"sync/atomic"
 )
 
 type pool[T any] struct {
-	sync.Mutex
-	ts   []T
-	i, n int
-	f    func() T
+	ts []T
+	atomic.Int32
+	n int32
+	f func() T
 }
 
-func New[T any](n int, f func() T) *pool[T] {
+func New[T any](n int32, f func() T) *pool[T] {
 	if n == 0 {
 		return nil
 	}
 	return &pool[T]{
-		sync.Mutex{},
 		make([]T, n),
-		0,
+		atomic.Int32{},
 		n,
 		f,
 	}
 }
 func (p *pool[T]) Get() (r T) {
-	p.Lock()
-	if p.i > 0 {
-		p.i--
-		r = p.ts[p.i]
-		p.Unlock()
+	if p.CompareAndSwap(0, 0) {
+		r = p.f()
 		return
 	}
-	p.Unlock()
-	r = p.f()
+	r = p.ts[p.Add(-1)]
 	return
 }
-func (p *pool[T]) Put(r T) {
-	p.Lock()
-	if p.i < p.n {
-		p.ts[p.i] = r
-		p.i++
+func (p *pool[T]) Put(r T) (ret bool) {
+	ret = p.CompareAndSwap(p.n, p.n)
+	if ret {
+		return
 	}
-	p.Unlock()
+	p.ts[p.Add(1)-1] = r
+	return
 }
